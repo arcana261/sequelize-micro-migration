@@ -1,0 +1,34 @@
+{
+  "name": "sequelize-micro-migration",
+  "version": "0.1.0",
+  "description": "Micro migration allows database schema used for various small modules to sync-up",
+  "main": "index.js",
+  "scripts": {
+    "doc": "jsdoc -r -c ./.jsdocrc.json -d docs",
+    "test": "mocha --reporter spec ./tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcana261/sequelize-micro-migration.git"
+  },
+  "keywords": [
+    "sequelize",
+    "migration"
+  ],
+  "engines": {
+    "node": ">=4.4.6"
+  },
+  "author": "Mohamad mehdi Kharatizadeh",
+  "license": "LGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/arcana261/sequelize-micro-migration/issues"
+  },
+  "homepage": "https://github.com/arcana261/sequelize-micro-migration#readme",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "eslint": "^3.6.1",
+    "eslint-config-google": "^0.6.0",
+    "jsdoc": "^3.4.1",
+    "mocha": "^3.1.0"
+  }
+}
