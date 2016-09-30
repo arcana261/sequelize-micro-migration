@@ -32,6 +32,7 @@
     "mocha": "^3.1.0"
   },
   "dependencies": {
+    "mz": "^2.4.0",
     "sequelize-db-meta": "arcana261/sequelize-db-meta"
   }
 }
