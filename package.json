@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "mz": "^2.4.0",
-    "sequelize-db-meta": "arcana261/sequelize-db-meta"
+    "sequelize-db-meta": "arcana261/sequelize-db-meta",
+    "xcane": "arcana261/xcane"
   }
 }
