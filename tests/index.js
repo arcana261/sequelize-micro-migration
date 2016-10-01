@@ -307,6 +307,7 @@ describe('SequelizeMicroMigration', () => {
 
         try {
           yield migration.up(filesSorted[0].replace(/\.js$/g, ''));
+          throw new Error('not thrown');
         } catch(err) {
           expect(err).to.be.an.instanceof(Error);
           expect(err.message).to.be.equal('hey! abort!');
