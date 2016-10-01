@@ -26,10 +26,13 @@
   "homepage": "https://github.com/arcana261/sequelize-micro-migration#readme",
   "devDependencies": {
     "chai": "^3.5.0",
+    "clone": "^2.0.0",
     "eslint": "^3.6.1",
     "eslint-config-google": "^0.6.0",
     "jsdoc": "^3.4.1",
-    "mocha": "^3.1.0"
+    "mocha": "^3.1.0",
+    "sequelize": "^3.24.3",
+    "sqlite3": "^3.1.4"
   },
   "dependencies": {
     "mz": "^2.4.0",
