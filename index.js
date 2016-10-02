@@ -13,6 +13,12 @@ let _require = x => require(x);
  * @author Mohamad mehdi Kharatizadeh - m_kharatizadeh@yahoo.com
  */
 class SequelizeMicroMigration {
+  /**
+   * @desc create a new instance of SequelizeMicroMigration
+   * @param {Sequelize} sequelize - instance to sequelize
+   * @param {string} application - application or module name
+   * @param {string} migrationDir - location of migration folder
+   */
   constructor(sequelize, application, migrationDir) {
     this._metaDb = (new metaDb.MetaDB(sequelize)).prefix(
       `migration:${application}:`);
@@ -24,14 +30,31 @@ class SequelizeMicroMigration {
     this._currentVersionsList = null;
   }
 
+  /**
+   * @desc is used to override fs module. used for test cases
+   * @param {*} newFs - new fs module mock
+   * @private
+   */
   static _overrideFs(newFs) {
     fs = newFs;
   }
 
+  /**
+   * @desc is used to set "require" method for migrations.
+   * used in test-cases to provide mocking functionality
+   * @param {function} newRequire - new mock require function
+   * @private
+   */
   static _overrideRequire(newRequire) {
     _require = newRequire;
   }
 
+  /**
+   * @desc sort versions found in migration folder
+   * @param {Array.<string>} versions - versions found in migration folder
+   * @return {Array.<string>} - sorted set of migrations
+   * @private
+   */
   _sort(versions) {
     return iterable.from(versions)
       .select(x => ({
@@ -43,6 +66,11 @@ class SequelizeMicroMigration {
       .toArray();
   }
 
+  /**
+   * @desc ensures that versions are loaded and cached from migration folder
+   * @return {Promise} - resolves when cache is set
+   * @private
+   */
   _ensure() {
     if (type.isNull(this._versions)) {
       return fs.readdir(this._migrationDir)
@@ -56,6 +84,10 @@ class SequelizeMicroMigration {
     return Promise.resolve();
   }
 
+  /**
+   * @desc returns current database version
+   * @return {Promise.<string>} - current database version
+   */
   current() {
     if (!type.isNull(this._current)) {
       return Promise.resolve(this._current);
@@ -68,18 +100,42 @@ class SequelizeMicroMigration {
       });
   }
 
+  /**
+   * @desc set last version on the database
+   * @param {string} version - current latest version
+   * @return {Promise} - resolves when version is set
+   * @private
+   */
   _setCurrent(version) {
     return this._metaDb.put('last', version);
   }
 
+  /**
+   * @desc sets that a version migration script is executed already
+   * @param {string} version - migration script that is executed
+   * @return {Promise} - resolves when mark is set
+   * @private
+   */
   _putVersion(version) {
     return this._versionDb.put(version, true);
   }
 
+  /**
+   * @desc unmarks a migration script due to "down" command
+   * @param {string} version - migration script that is degraded
+   * @return {Promise} - resolves when mark is unset
+   * @private
+   */
   _deleteVersion(version) {
     return this._versionDb.delete(version);
   }
 
+  /**
+   * @desc returns sorted array of database migrations currently up
+   * in working database
+   * @return {Promise.<Array.<string> >} - list of currently up migrations
+   * @private
+   */
   _currentVersions() {
     if (!type.isNull(this._currentVersionsList)) {
       return Promise.resolve(this._currentVersionsList);
@@ -91,12 +147,24 @@ class SequelizeMicroMigration {
     });
   }
 
+  /**
+   * @desc clears local cache of fetched data
+   * @private
+   */
   _clearCache() {
     this._versions = null;
     this._current = null;
     this._currentVersionsList = null;
   }
 
+  /**
+   * @desc lists migration actions necessary to travel to selected version
+   * @param {number|string} [to] - target version. number can be used to
+   * take migration steps
+   * @return {Promise.<Array.<Array.<string> > >} - migration steps. first
+   * item shows target version and second item shows action necessary, either
+   * "up" or "down".
+   */
   listUp(to) {
     const self = this;
 
@@ -148,6 +216,14 @@ class SequelizeMicroMigration {
     });
   }
 
+  /**
+   * @desc lists migration actions necessary to travel down to selected version
+   * @param {number|string} [to] - target version. number can be used to
+   * take migration steps
+   * @return {Promise.<Array.<Array.<string> > >} - migration steps. first
+   * item shows target version and second item shows action necessary, either
+   * "up" or "down".
+   */
   listDown(to) {
     const self = this;
 
@@ -202,6 +278,12 @@ class SequelizeMicroMigration {
     });
   }
 
+  /**
+   * @desc executes a single migration step
+   * @param {Array.<string>} item - a single item. first item shows target
+   * version and second item shows action to take, either "up" or "down".
+   * @return {Promise} - resolves when migration is done
+   */
   execute(item) {
     const version = item[0];
     const act = item[1];
@@ -236,6 +318,14 @@ class SequelizeMicroMigration {
     return iterable.async(list).each(x => this.execute(x));
   }
 
+  /**
+   * @desc travells database up to target version
+   * @param {number|string} [to] - target version. number can be used to
+   * take migration steps
+   * @param {boolean=} force - if set to true, will take downgrade actions
+   * as well.
+   * @return {Promise} - resolves when migration is done
+   */
   up(to, force) {
     return this.listUp(to).then(list => {
       if (!type.isBoolean(force)) {
@@ -251,10 +341,20 @@ class SequelizeMicroMigration {
     });
   }
 
+  /**
+   * @desc travells database down to target version
+   * @param {number|string} [to] - target version. number can be used to
+   * take migration steps
+   * @return {Promise} - resolves when migration is done
+   */
   down(to) {
     return this.listDown(to).then(list => this._executeAll(list));
   }
 
+  /**
+   * @desc specifies whether migration is necessary
+   * @return {Promise.<boolean>} - true if migration is necessary
+   */
   requiresMigration() {
     return this.listUp().then(list => Promise.resolve(list.length > 0));
   }

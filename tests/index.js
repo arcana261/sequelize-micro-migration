@@ -326,6 +326,7 @@ describe('SequelizeMicroMigration', () => {
           expect(overrideFs._upped[filesSorted[1]]).to.be.true;
           expect(overrideFs._upped[filesSorted[2]]).to.be.true;
           expect(overrideFs._upped[filesSorted[3]]).to.be.true;
+          expect(yield migration.current()).to.be.equal(filesSorted[3].replace(/\.js$/g, ''));
         }));
 
       it('should work with multiple numebers', () =>
@@ -336,16 +337,19 @@ describe('SequelizeMicroMigration', () => {
           expect(overrideFs._upped[filesSorted[1]]).to.not.be.true;
           expect(overrideFs._upped[filesSorted[2]]).to.not.be.true;
           expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
+          expect(yield migration.current()).to.be.equal(filesSorted[0].replace(/\.js$/g, ''));
           yield migration.up(2);
           expect(overrideFs._upped[filesSorted[0]]).to.be.true;
           expect(overrideFs._upped[filesSorted[1]]).to.be.true;
           expect(overrideFs._upped[filesSorted[2]]).to.be.true;
           expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
+          expect(yield migration.current()).to.be.equal(filesSorted[2].replace(/\.js$/g, ''));
           yield migration.up(2);
           expect(overrideFs._upped[filesSorted[0]]).to.be.true;
           expect(overrideFs._upped[filesSorted[1]]).to.be.true;
           expect(overrideFs._upped[filesSorted[2]]).to.be.true;
           expect(overrideFs._upped[filesSorted[3]]).to.be.true;
+          expect(yield migration.current()).to.be.equal(filesSorted[3].replace(/\.js$/g, ''));
         }));
 
       it('should be able to install missing migration', () =>
@@ -357,11 +361,13 @@ describe('SequelizeMicroMigration', () => {
           expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
           yield migration.up(1);
           overrideFs._upped[filesSorted[1]] = true;
+          expect(yield migration.current()).to.be.equal(filesSorted[0].replace(/\.js$/g, ''));
           yield migration.up();
           expect(overrideFs._upped[filesSorted[0]]).to.be.true;
           expect(overrideFs._upped[filesSorted[1]]).to.be.true;
           expect(overrideFs._upped[filesSorted[2]]).to.be.true;
           expect(overrideFs._upped[filesSorted[3]]).to.be.true;
+          expect(yield migration.current()).to.be.equal(filesSorted[3].replace(/\.js$/g, ''));
           migration._clearCache();
           overrideFs._files = filesSorted;
           expect(yield migration.listUp()).to.be.deep.equal([
@@ -451,21 +457,25 @@ describe('SequelizeMicroMigration', () => {
         expect(overrideFs._upped[filesSorted[1]]).to.be.true;
         expect(overrideFs._upped[filesSorted[2]]).to.be.true;
         expect(overrideFs._upped[filesSorted[3]]).to.be.true;
+        expect(yield migration.current()).to.be.equal(filesSorted[3].replace(/\.js$/g, ''));
         yield migration.down(2);
         expect(overrideFs._upped[filesSorted[0]]).to.be.true;
         expect(overrideFs._upped[filesSorted[1]]).to.be.true;
         expect(overrideFs._upped[filesSorted[2]]).to.be.false;
         expect(overrideFs._upped[filesSorted[3]]).to.be.false;
+        expect(yield migration.current()).to.be.equal(filesSorted[1].replace(/\.js$/g, ''));
         yield migration.down(1);
         expect(overrideFs._upped[filesSorted[0]]).to.be.true;
         expect(overrideFs._upped[filesSorted[1]]).to.be.false;
         expect(overrideFs._upped[filesSorted[2]]).to.be.false;
         expect(overrideFs._upped[filesSorted[3]]).to.be.false;
+        expect(yield migration.current()).to.be.equal(filesSorted[0].replace(/\.js$/g, ''));
         yield migration.down(2);
         expect(overrideFs._upped[filesSorted[0]]).to.be.false;
         expect(overrideFs._upped[filesSorted[1]]).to.be.false;
         expect(overrideFs._upped[filesSorted[2]]).to.be.false;
         expect(overrideFs._upped[filesSorted[3]]).to.be.false;
+        expect(yield migration.current()).to.be.equal('0');
       }));
 
       it('should be able to install missing migration', () =>
@@ -477,11 +487,13 @@ describe('SequelizeMicroMigration', () => {
           expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
           yield migration.up(1);
           overrideFs._upped[filesSorted[1]] = true;
+          expect(yield migration.current()).to.be.equal(filesSorted[0].replace(/\.js$/g, ''));
           yield migration.up();
           expect(overrideFs._upped[filesSorted[0]]).to.be.true;
           expect(overrideFs._upped[filesSorted[1]]).to.be.true;
           expect(overrideFs._upped[filesSorted[2]]).to.be.true;
           expect(overrideFs._upped[filesSorted[3]]).to.be.true;
+          expect(yield migration.current()).to.be.equal(filesSorted[3].replace(/\.js$/g, ''));
           migration._clearCache();
           overrideFs._files = filesSorted;
           expect(yield migration.listDown(1)).to.be.deep.equal([
@@ -507,23 +519,28 @@ describe('SequelizeMicroMigration', () => {
         expect(overrideFs._upped[filesSorted[1]]).to.not.be.true;
         expect(overrideFs._upped[filesSorted[2]]).to.not.be.true;
         expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
+        expect(yield migration.current()).to.be.equal('0');
         yield migration.execute([filesSorted[0].replace(/\.js$/g, ''), 'up']);
+        expect(yield migration.current()).to.be.equal(filesSorted[0].replace(/\.js$/g, ''));
         expect(overrideFs._upped[filesSorted[0]]).to.be.true;
         expect(overrideFs._upped[filesSorted[1]]).to.not.be.true;
         expect(overrideFs._upped[filesSorted[2]]).to.not.be.true;
         expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
         yield migration.execute([filesSorted[1].replace(/\.js$/g, ''), 'up']);
+        expect(yield migration.current()).to.be.equal(filesSorted[1].replace(/\.js$/g, ''));
         expect(overrideFs._upped[filesSorted[0]]).to.be.true;
         expect(overrideFs._upped[filesSorted[1]]).to.be.true;
         expect(overrideFs._upped[filesSorted[2]]).to.not.be.true;
         expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
         yield migration.execute([filesSorted[1].replace(/\.js$/g, ''), 'down']);
+        expect(yield migration.current()).to.be.equal(filesSorted[0].replace(/\.js$/g, ''));
         expect(overrideFs._upped[filesSorted[0]]).to.be.true;
         expect(overrideFs._upped[filesSorted[1]]).to.be.false;
         expect(overrideFs._upped[filesSorted[2]]).to.not.be.true;
         expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
         yield migration.execute([filesSorted[0].replace(/\.js$/g, ''), 'down']);
         expect(overrideFs._upped[filesSorted[0]]).to.be.false;
+        expect(yield migration.current()).to.be.equal('0');
         expect(overrideFs._upped[filesSorted[1]]).to.be.false;
         expect(overrideFs._upped[filesSorted[2]]).to.not.be.true;
         expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
