@@ -254,6 +254,10 @@ class SequelizeMicroMigration {
   down(to) {
     return this.listDown(to).then(list => this._executeAll(list));
   }
+
+  requiresMigration() {
+    return this.listUp().then(list => Promise.resolve(list.length > 0));
+  }
 }
 
 module.exports = SequelizeMicroMigration;

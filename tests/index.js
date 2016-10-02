@@ -379,6 +379,32 @@ describe('SequelizeMicroMigration', () => {
             [filesSorted[3].replace(/\.js$/g, ''), 'up']
           ]);
         }));
+
+      it('should fail with unspecified or false force flag, missing migration', () =>
+        task.spawn(function* () {
+          overrideFs._files = filesSorted.filter((x, i) => i !== 1);
+          yield migration.up(1);
+          overrideFs._upped[filesSorted[1]] = true;
+          yield migration.up();
+          migration._clearCache();
+          overrideFs._files = filesSorted;
+          try {
+            yield migration.up();
+          } catch (err) {
+            expect(err).to.be.an.instanceof(Error);
+            expect(err.message).to.be.equal(
+              'migration might cause loss of data,' +
+              'continue with force flag if necessary');
+          }
+          try {
+            yield migration.up(null, false);
+          } catch (err) {
+            expect(err).to.be.an.instanceof(Error);
+            expect(err.message).to.be.equal(
+              'migration might cause loss of data,' +
+              'continue with force flag if necessary');
+          }
+        }));
   });
 
   describe('#down()', () => {
@@ -471,5 +497,48 @@ describe('SequelizeMicroMigration', () => {
             [filesSorted[2].replace(/\.js$/g, ''), 'up']
           ]);
         }));
+  });
+
+  describe('#execute()', () => {
+    it('should execute correctly', () =>
+      task.spawn(function* () {
+        overrideFs._files = filesSorted;
+        expect(overrideFs._upped[filesSorted[0]]).to.not.be.true;
+        expect(overrideFs._upped[filesSorted[1]]).to.not.be.true;
+        expect(overrideFs._upped[filesSorted[2]]).to.not.be.true;
+        expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
+        yield migration.execute([filesSorted[0].replace(/\.js$/g, ''), 'up']);
+        expect(overrideFs._upped[filesSorted[0]]).to.be.true;
+        expect(overrideFs._upped[filesSorted[1]]).to.not.be.true;
+        expect(overrideFs._upped[filesSorted[2]]).to.not.be.true;
+        expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
+        yield migration.execute([filesSorted[1].replace(/\.js$/g, ''), 'up']);
+        expect(overrideFs._upped[filesSorted[0]]).to.be.true;
+        expect(overrideFs._upped[filesSorted[1]]).to.be.true;
+        expect(overrideFs._upped[filesSorted[2]]).to.not.be.true;
+        expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
+        yield migration.execute([filesSorted[1].replace(/\.js$/g, ''), 'down']);
+        expect(overrideFs._upped[filesSorted[0]]).to.be.true;
+        expect(overrideFs._upped[filesSorted[1]]).to.be.false;
+        expect(overrideFs._upped[filesSorted[2]]).to.not.be.true;
+        expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
+        yield migration.execute([filesSorted[0].replace(/\.js$/g, ''), 'down']);
+        expect(overrideFs._upped[filesSorted[0]]).to.be.false;
+        expect(overrideFs._upped[filesSorted[1]]).to.be.false;
+        expect(overrideFs._upped[filesSorted[2]]).to.not.be.true;
+        expect(overrideFs._upped[filesSorted[3]]).to.not.be.true;
+      }));
+  });
+
+  describe('#requiresMigration', () => {
+    it('should correctly show need for migration', () =>
+      task.spawn(function* () {
+        overrideFs._files = filesSorted;
+        expect(yield migration.requiresMigration()).to.be.true;
+        yield migration.up();
+        expect(yield migration.requiresMigration()).to.be.false;
+        yield migration.down();
+        expect(yield migration.requiresMigration()).to.be.true;
+      }));
   });
 });
