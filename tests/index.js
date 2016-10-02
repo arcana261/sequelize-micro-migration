@@ -154,6 +154,10 @@ describe('SequelizeMicroMigration', () => {
     sequelize.sync().then(() => done()).catch(done);
   });
 
+  describe('#application', () =>
+    it('should return correct application name', () =>
+      expect(migration.application).to.be.equal('myApplication')));
+
   describe('#current()', () => {
     it('should correctly show version of empty database', () =>
       task.spawn(function* () {

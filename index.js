@@ -28,6 +28,15 @@ class SequelizeMicroMigration {
     this._migrationDir = migrationDir;
     this._current = null;
     this._currentVersionsList = null;
+    this._application = application;
+  }
+
+  /**
+   * @desc return application name
+   * @return {string} - application name
+   */
+  get application() {
+    return this._application;
   }
 
   /**
