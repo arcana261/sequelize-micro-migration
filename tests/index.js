@@ -603,4 +603,10 @@ describe('SequelizeMicroMigration', () => {
           filesSorted[3].replace(/\.js$/g, '')
         ]);
       })));
+
+  describe('#sort()', () =>
+    it('should sort versions correctly', () =>
+      task.spawn(function* () {
+        expect(migration.sort(filesPermuted)).to.be.deep.equal(filesSorted);
+      })));
 });

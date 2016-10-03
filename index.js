@@ -62,9 +62,8 @@ class SequelizeMicroMigration {
    * @desc sort versions found in migration folder
    * @param {Array.<string>} versions - versions found in migration folder
    * @return {Array.<string>} - sorted set of migrations
-   * @private
    */
-  _sort(versions) {
+  sort(versions) {
     return iterable.from(versions)
       .select(x => ({
         path: x,
@@ -83,7 +82,7 @@ class SequelizeMicroMigration {
     if (type.isNull(this._versions)) {
       return fs.readdir(this._migrationDir)
         .then(files => {
-          this._versions = this._sort(
+          this._versions = this.sort(
             files.map(x => path.basename(x, path.extname(x))));
           return Promise.resolve(this._versions);
         });
@@ -149,7 +148,7 @@ class SequelizeMicroMigration {
     }
 
     return this._versionDb.all().then(all => {
-      this._currentVersionsList = this._sort(all.map(x => x.key));
+      this._currentVersionsList = this.sort(all.map(x => x.key));
       return Promise.resolve(this._currentVersionsList);
     });
   }
