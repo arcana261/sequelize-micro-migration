@@ -562,4 +562,45 @@ describe('SequelizeMicroMigration', () => {
         expect(yield migration.requiresMigration()).to.be.true;
       }));
   });
+
+  describe('#currentVersions()', () =>
+    it('should correctly show current versions', () =>
+      task.spawn(function* () {
+        overrideFs._files = filesSorted;
+        expect(yield migration.currentVersions()).to.be.deep.equal([]);
+        yield migration.up(1);
+        expect(yield migration.currentVersions()).to.be.deep.equal([
+          filesSorted[0].replace(/\.js$/g, '')
+        ]);
+        yield migration.up(1);
+        expect(yield migration.currentVersions()).to.be.deep.equal([
+          filesSorted[0].replace(/\.js$/g, ''),
+          filesSorted[1].replace(/\.js$/g, '')
+        ]);
+        yield migration.up(1);
+        expect(yield migration.currentVersions()).to.be.deep.equal([
+          filesSorted[0].replace(/\.js$/g, ''),
+          filesSorted[1].replace(/\.js$/g, ''),
+          filesSorted[2].replace(/\.js$/g, '')
+        ]);
+        yield migration.up(1);
+        expect(yield migration.currentVersions()).to.be.deep.equal([
+          filesSorted[0].replace(/\.js$/g, ''),
+          filesSorted[1].replace(/\.js$/g, ''),
+          filesSorted[2].replace(/\.js$/g, ''),
+          filesSorted[3].replace(/\.js$/g, '')
+        ]);
+      })));
+
+  describe('#versions()', () =>
+    it('should correctly list loaded versions from cache folder', () =>
+      task.spawn(function* () {
+        overrideFs._files = filesSorted;
+        expect(yield migration.versions()).to.be.deep.equal([
+          filesSorted[0].replace(/\.js$/g, ''),
+          filesSorted[1].replace(/\.js$/g, ''),
+          filesSorted[2].replace(/\.js$/g, ''),
+          filesSorted[3].replace(/\.js$/g, '')
+        ]);
+      })));
 });

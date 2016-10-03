@@ -77,10 +77,9 @@ class SequelizeMicroMigration {
 
   /**
    * @desc ensures that versions are loaded and cached from migration folder
-   * @return {Promise} - resolves when cache is set
-   * @private
+   * @return {Promise.<Array.<string> >} - resolves when cache is set
    */
-  _ensure() {
+  versions() {
     if (type.isNull(this._versions)) {
       return fs.readdir(this._migrationDir)
         .then(files => {
@@ -90,7 +89,7 @@ class SequelizeMicroMigration {
         });
     }
 
-    return Promise.resolve();
+    return Promise.resolve(this._versions);
   }
 
   /**
@@ -143,9 +142,8 @@ class SequelizeMicroMigration {
    * @desc returns sorted array of database migrations currently up
    * in working database
    * @return {Promise.<Array.<string> >} - list of currently up migrations
-   * @private
    */
-  _currentVersions() {
+  currentVersions() {
     if (!type.isNull(this._currentVersionsList)) {
       return Promise.resolve(this._currentVersionsList);
     }
@@ -178,9 +176,9 @@ class SequelizeMicroMigration {
     const self = this;
 
     return task.spawn(function * task() {
-      yield self._ensure();
+      yield self.versions();
       const result = [];
-      const currentVersionsArray = Array.from(yield self._currentVersions());
+      const currentVersionsArray = Array.from(yield self.currentVersions());
       const currentVersions = currentVersionsArray
         .reduce((prev, x, i) => Object.assign(prev, {
           [x]: i
@@ -237,8 +235,8 @@ class SequelizeMicroMigration {
     const self = this;
 
     return task.spawn(function * task() {
-      yield self._ensure();
-      const currentVersionsArray = yield self._currentVersions();
+      yield self.versions();
+      const currentVersionsArray = yield self.currentVersions();
       let result = yield self.listUp();
 
       if (type.isNumber(to)) {
@@ -311,7 +309,7 @@ class SequelizeMicroMigration {
           yield script.down(
             self._sequelize.getQueryInterface(), self._sequelize);
           yield self._deleteVersion(version);
-          yield self._ensure();
+          yield self.versions();
           const index = self._versions.indexOf(version);
           if (index < 1) {
             yield self._setCurrent('0');
@@ -323,6 +321,13 @@ class SequelizeMicroMigration {
       }));
   }
 
+  /**
+   * @desc executes all migration commands
+   * @param {Array.<Array.<string> >} list - first string shows migration
+   * version, second one shows action in form of "up" or "down".
+   * @return {Promise} - resolves when migration is done
+   * @private
+   */
   _executeAll(list) {
     return iterable.async(list).each(x => this.execute(x));
   }
